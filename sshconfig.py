@@ -309,6 +309,10 @@ class Host:
         for name, value in options.items():
             string += f"\n\t{name} {value}"
         return string
+    
+    def matches(self, alias):
+        pattern = regex(self.Host)
+        return bool(re.match(pattern, alias))
 
     @property
     def ConnectionAttempts(self):
@@ -462,3 +466,28 @@ class SSHConfig:
         contents = self.to_string()
         with open(self.filepath, "w") as f:
             f.write(contents)
+
+def regex(pattern: str):
+    "Convert the shell pattern to a regex pattern"
+    # Convert . to \.
+    pattern = pattern.replace(".", r"\.")
+
+    # Convert wildcard characters
+    pattern = pattern.replace("*", ".*")
+    pattern = pattern.replace("?", f".")
+
+    return pattern
+
+def get_config(hostname, filepath = None):
+    config_file = SSHConfig(filepath)
+    config = Host(hostname)
+    for host in reversed(config_file.read()):
+        if host.matches(hostname):
+            options = host.options()
+
+            # Don't update the Host option
+            del options["Host"]
+
+            config.update(**options)
+            
+    return config
