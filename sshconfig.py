@@ -1,19 +1,75 @@
 import os
 import re
 
+class InvalidValueError(Exception):
+
+    def __init__(self, value, options):
+        super().__init__(f"Not a valid value: {value}. Valid options are {', '.join(options)}")
+
 class OptionSet:
+    """
+    A class representing a set of options.
+
+    Attributes
+    ----------
+    _options : list of str
+        List of available options.
+    """
 
     _options: list[str] = []
 
     @classmethod
     def get(cls, value):
+        """
+        Get the option corresponding to the given value.
+
+        Parameters
+        ----------
+        value : str
+            The value to search for.
+
+        Returns
+        -------
+        str
+            The option corresponding to the given value.
+
+        Raises
+        ------
+        Exception
+            If the given value is not a valid option.
+        """
         _value = str(value).lower()
         for option in cls._options:
             if _value == option.lower():
                 return option
-        raise Exception(f"Not a valid value: {value}. Valid options are {', '.join(cls._options)}")
+        raise InvalidValueError(value, cls._options)
 
 class LogLevel(OptionSet):
+    """
+    A class representing the log level options.
+
+    Attributes
+    ----------
+    QUIET : str
+        Quiet log level.
+    FATAL : str
+        Fatal log level.
+    ERROR : str
+        Error log level.
+    INFO : str
+        Info log level.
+    VERBOSE : str
+        Verbose log level.
+    DEBUG : str
+        Debug log level.
+    DEBUG1 : str
+        Debug1 log level.
+    DEBUG2 : str
+        Debug2 log level.
+    DEBUG3 : str
+        Debug3 log level.
+    """
+
     QUIET = "QUIET"
     FATAL = "FATAL"
     ERROR = "ERROR"
@@ -28,6 +84,17 @@ class LogLevel(OptionSet):
                 DEBUG, DEBUG1, DEBUG2, DEBUG3]
 
 class YesNo(OptionSet):
+    """
+    A class representing yes/no options.
+
+    Attributes
+    ----------
+    YES : str
+        Yes option.
+    NO : str
+        No option.
+    """
+
     YES = "yes"
     NO = "no"
 
@@ -35,8 +102,29 @@ class YesNo(OptionSet):
 
 
 class Host:
+    """
+    A class representing an SSH host configuration.
+
+    Attributes
+    ----------
+    Host : str
+        The hostname or alias of the host.
+    (Other attributes) : various
+        Various SSH configuration options.
+    """
 
     def __init__(self, Host: str, **kwargs):
+        """
+        Initialize a Host instance.
+
+        Parameters
+        ----------
+        Host : str
+            The hostname or alias of the host.
+        **kwargs
+            Additional SSH configuration options.
+        """
+
         self.Host: str = Host
 
         self.AddKeysToAgent: str = None
@@ -177,10 +265,28 @@ class Host:
         return self.__getattribute__(name)
 
     def update(self, **kwargs):
+        """
+        Update the SSH configuration options of the host.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional SSH configuration options.
+        """
         for name, value in kwargs.items():
             self[name] = value
 
     def options(self):
+        """
+        Get the SSH configuration options of the host.
+
+        Only includes options that have been specified (i.e., are not `None`).
+
+        Returns
+        -------
+        dict
+            A dictionary containing the SSH configuration options of the host.
+        """
         opts: dict[str, ] = {}
         for o in dir(self):
             if not (o.startswith("_") or callable(self[o]) or self[o] is None):
@@ -188,6 +294,15 @@ class Host:
         return opts
 
     def to_string(self):
+        """
+        Convert the SSH configuration of the host into a string representation
+        that is suitable for writing to the SSH config file.
+
+        Returns
+        -------
+        str
+            A string representation of the SSH configuration of the host.
+        """
         options = self.options()
         host = options.pop("Host")
         string = f"Host {host}"
@@ -261,14 +376,30 @@ class Host:
 
 
 class SSHConfig:
+    """
+    A class representing an SSH configuration file.
+
+    Attributes
+    ----------
+    _default_path : str
+        The default path for the SSH configuration file.
+    """
 
     _default_path = os.path.expanduser("~/.ssh/config")
 
     def __init__(self, filepath: str = None):
+        """
+        Initialize an SSHConfig instance.
+
+        Parameters
+        ----------
+        filepath : str, optional
+            The filepath of the SSH configuration file. Defaults to None.
+        """
         if filepath is None:
             self.filepath = SSHConfig._default_path
             if not os.path.exists(self.filepath):
-                raise Exception(f"No filepath was provided and the default path ({SSHConfig._default_path}) does not exist.")
+                raise FileNotFoundError(f"No filepath was provided and the default path ({SSHConfig._default_path}) does not exist.")
         else:
             self.filepath = filepath
 
@@ -281,6 +412,14 @@ class SSHConfig:
         return f"SSH config file ({self.filepath})"
 
     def read(self) -> list[Host]:
+        """
+        Read the SSH configuration file and parse it into a list of Host objects.
+
+        Returns
+        -------
+        list[Host]
+            A list of Host objects parsed from the SSH configuration file.
+        """
         with open(self.filepath, "r") as f:
             lines = f.readlines()
 
@@ -305,9 +444,21 @@ class SSHConfig:
         return self.hosts
 
     def to_string(self):
+        """
+        Convert the SSH configuration into a string representation that
+        is suitable for writing to the SSH config file.
+
+        Returns
+        -------
+        str
+            A string representation of the SSH configuration.
+        """
         return "\n\n".join([x.to_string() for x in self.hosts])
 
     def write(self):
+        """
+        Write the SSH configuration to the file.
+        """
         contents = self.to_string()
         with open(self.filepath, "w") as f:
             f.write(contents)
