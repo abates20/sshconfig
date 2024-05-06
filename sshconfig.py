@@ -164,7 +164,7 @@ class Host:
 
     def __repr__(self):
         return f"Host('{self.Host}')"
-    
+
     def __str__(self):
         return f"Host {self.Host}"
 
@@ -175,7 +175,7 @@ class Host:
         if name not in dir(self):
             return None
         return self.__getattribute__(name)
-    
+
     def update(self, **kwargs):
         for name, value in kwargs.items():
             self[name] = value
@@ -186,7 +186,7 @@ class Host:
             if not (o.startswith("_") or callable(self[o]) or self[o] is None):
                 opts[o] = self[o]
         return opts
-    
+
     def to_string(self):
         options = self.options()
         host = options.pop("Host")
@@ -198,7 +198,7 @@ class Host:
     @property
     def ConnectionAttempts(self):
         return self._ConnectionAttempts
-    
+
     @ConnectionAttempts.setter
     def ConnectionAttempts(self, value):
         self._ConnectionAttempts = int(value) if value else value
@@ -206,7 +206,7 @@ class Host:
     @property
     def ConnectTimeout(self):
         return self._ConnectTimeout
-    
+
     @ConnectTimeout.setter
     def ConnectTimeout(self, value):
         self._ConnectTimeout = int(value) if value else value
@@ -214,7 +214,7 @@ class Host:
     @property
     def ControlPersist(self):
         return self._ControlPersist
-    
+
     @ControlPersist.setter
     def ControlPersist(self, value):
         self._ControlPersist = YesNo.get(value) if value else value
@@ -222,7 +222,7 @@ class Host:
     @property
     def ForwardX11(self):
         return self._ForwardX11
-    
+
     @ForwardX11.setter
     def ForwardX11(self, value):
         self._ForwardX11 = YesNo.get(value) if value else value
@@ -230,7 +230,7 @@ class Host:
     @property
     def LogLevel(self):
         return self._LogLevel
-    
+
     @LogLevel.setter
     def LogLevel(self, value):
         self._LogLevel = LogLevel.get(value) if value else value
@@ -238,7 +238,7 @@ class Host:
     @property
     def NumberOfPasswordPrompts(self):
         return self._NumberOfPasswordPrompts
-    
+
     @NumberOfPasswordPrompts.setter
     def NumberOfPasswordPrompts(self, value):
         self._NumberOfPasswordPrompts = int(value) if value else value
@@ -246,7 +246,7 @@ class Host:
     @property
     def ServerAliveCountMax(self):
         return self._ServerAliveCountMax
-    
+
     @ServerAliveCountMax.setter
     def ServerAliveCountMax(self, value):
         self._ServerAliveCountMax = int(value) if value else value
@@ -254,7 +254,7 @@ class Host:
     @property
     def ServerAliveInterval(self):
         return self._ServerAliveInterval
-    
+
     @ServerAliveInterval.setter
     def ServerAliveInterval(self, value):
         self._ServerAliveInterval = int(value) if value else value
@@ -276,10 +276,10 @@ class SSHConfig:
 
     def __repr__(self) -> str:
         return f"SSHConfig({self.filepath})"
-    
+
     def __str__(self) -> str:
         return f"SSH config file ({self.filepath})"
-    
+
     def read(self) -> list[Host]:
         with open(self.filepath, "r") as f:
             lines = f.readlines()
@@ -287,14 +287,14 @@ class SSHConfig:
         self.hosts: list[Host] = []
         current_host = None
         host_pattern = r"^Host (.+)$"
-        for i, line in enumerate(lines):
+        for line in lines:
             new_host = re.match(host_pattern, line.rstrip())
 
             if new_host:
                 current_host = Host(new_host.group(1))
                 self.hosts.append(current_host)
 
-            elif current_host != None:
+            elif current_host is not None:
                 items = line.strip().split()
                 if len(items) ==  0:
                     continue
@@ -303,10 +303,10 @@ class SSHConfig:
                 current_host[name] = value
 
         return self.hosts
-    
+
     def to_string(self):
         return "\n\n".join([x.to_string() for x in self.hosts])
-    
+
     def write(self):
         contents = self.to_string()
         with open(self.filepath, "w") as f:
