@@ -120,7 +120,8 @@ class SSHConfig:
         if filepath is None:
             self.filepath = SSHConfig._default_path
             if not os.path.exists(self.filepath):
-                raise FileNotFoundError(f"No filepath was provided and the default path ({SSHConfig._default_path}) does not exist.")
+                file = open(self.filepath, "x")
+                file.close()
         else:
             self.filepath = filepath
 
@@ -183,6 +184,7 @@ class SSHConfig:
         contents = self.to_string()
         with open(self.filepath, "w") as f:
             f.write(contents)
+
 
 def regex(pattern: str):
     "Convert the shell pattern to a regex pattern"
