@@ -1,0 +1,12 @@
+Host *
+    User testUser
+
+Host *.example.com
+    ForwardX11 yes
+
+Host *.com
+    ConnectTimeout 15
+
+Host quick
+    HostName test.case.edu
+    LogLevel DEBUG3
