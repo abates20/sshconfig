@@ -220,7 +220,7 @@ def get_config(alias, filepath = None):
             options = host.options()
 
             # Don't update the Host option
-            del options["Host"]
+            del options["host"]
 
             config.update(**options)
             
