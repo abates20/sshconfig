@@ -3,7 +3,7 @@ name = "sshconfig"
 version = "0.1.6"
 description = "A simple Python module for interacting with SSH config files."
 authors = ["Adam Bates <adambates923@gmail.com>"]
-license = "GPL-3.0-or-later"
+license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/abates20/sshconfig"
 
